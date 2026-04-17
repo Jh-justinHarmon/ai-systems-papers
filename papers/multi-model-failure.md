@@ -4,7 +4,11 @@ We're building multi-model systems as if each model call is a trusted function.
 
 It's not. It's a handoff.
 
-The receiving model can't check what it got. The originating model has no control over how its output will be interpreted. So every step introduces ambiguity, and it compounds.
+The receiving model can't check what it got.  
+The originating model has no control over how its output will be interpreted.
+
+So every step introduces ambiguity.  
+And it compounds.
 
 This looks like composition. It's actually accumulation — error accumulating across steps.
 
@@ -18,13 +22,24 @@ Model A produces something valid — by its own definition.
 
 That gets passed forward without being checked.
 
-Model B picks it up and interprets it under a slightly different frame. Maybe it assumes a different schema. Maybe it strips context that was load-bearing. Maybe it treats a constraint as a suggestion.
+Model B picks it up and interprets it under a slightly different frame.
+
+- Maybe it assumes a different schema  
+- Maybe it strips context that was load-bearing  
+- Maybe it treats a constraint as a suggestion
 
 Nothing breaks. Nothing throws.
 
-The break happens in the handoff — and you don't see it, because both models did their job. Model A produced valid output. Model B processed it as valid input.
+The break happens in the handoff — and you don't see it, because both models did their job.
 
-You only see it later. Wrong action taken. Wrong data written. Wrong decision made.
+- Model A produced valid output  
+- Model B processed it as valid input
+
+You only see it later.
+
+Wrong action taken.  
+Wrong data written.  
+Wrong decision made.
 
 At that point, you can't localize the failure. There's no error signal. Just a bad outcome and no clear path back.
 
@@ -42,7 +57,7 @@ Except now we've turned that into a system behavior. We've taken the failure mod
 
 ## What's Actually Missing
 
-This is not an orchestration problem. It's a missing layer problem.
+**This is not an orchestration problem. It's a missing layer problem.**
 
 We don't have anything that defines:
 - what a valid output is
@@ -54,7 +69,9 @@ So we treat models like functions, but we don't provide the infrastructure that 
 
 Right now the system is:
 
-**produce → pass → reinterpret → pass → reinterpret**
+```
+produce → pass → reinterpret → pass → reinterpret
+```
 
 There's no point where truth gets re-established. Every step assumes the last step was correct. And that assumption is never checked.
 
@@ -66,7 +83,7 @@ You don't have a contract for what Model A is supposed to produce. You don't hav
 
 So the system degrades silently. Each step looks fine in isolation. The failure is in how they connect.
 
-Multi-model systems are function chains without contracts. That's the diagnosis.
+**Multi-model systems are function chains without contracts.** That's the diagnosis.
 
 ---
 
@@ -80,23 +97,19 @@ What actually changes the system is inserting control at the handoff.
 
 That means putting control at the handoff:
 
-You check what's being passed.
-
-You validate it against an expectation.
-
-You decide explicitly whether it moves forward.
-
-And you track what actually survives each step, not what you assume survives.
-
-And you define who's right when interpretations diverge — because right now, that's implicit.
+- You check what's being passed  
+- You validate it against an expectation  
+- You decide explicitly whether it moves forward  
+- You track what actually survives each step, not what you assume survives  
+- You define who's right when interpretations diverge — because right now, that's implicit
 
 With that in place, the system changes:
 
-Failures stop showing up at the end. They show up at the moment something goes wrong. The handoff fails, and you know it failed, and you know why.
+- Failures stop showing up at the end. They show up at the moment something goes wrong  
+- You can see what each model received and what it produced. Debugging becomes tractable  
+- Behavior becomes repeatable. Same input, same intermediate states, same outcome — and you can see why
 
-You can see what each model received and what it produced. Debugging becomes tractable. You're not reverse-engineering a bad outcome. You're inspecting a specific boundary where the contract broke.
-
-Behavior becomes repeatable. Same input, same intermediate states, same outcome — and you can see why. The system stops being emergent and starts being composable.
+The system stops being emergent and starts being composable.
 
 That's the difference between a system that works in demos and a system that works in production.
 
