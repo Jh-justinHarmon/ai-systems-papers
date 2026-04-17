@@ -43,15 +43,21 @@ Wrong decision made.
 
 At that point, you can't localize the failure. There's no error signal. Just a bad outcome and no clear path back.
 
-This looks like orchestration. It isn't. Orchestration assumes the components are reliable. These aren't.
+> This looks like orchestration. It isn't.  
+> Orchestration assumes the components are reliable. These aren't.
 
-This looks like model failure. It isn't. The models worked. The infrastructure didn't.
+> This looks like model failure. It isn't.  
+> The models worked. The infrastructure didn't.
 
-This looks like composition. It isn't. Composition requires contracts. This is just data passing without guarantees.
+> This looks like composition. It isn't.  
+> Composition requires contracts. This is just data passing without guarantees.
 
-The pattern is the same as a hallucination inside a single conversation thread. One bad assumption gets introduced early. Everything after that looks consistent, but it's wrong. The model fails confidently, so you don't catch it until the reasoning chain has already compounded the error.
+*The pattern is the same as a hallucination inside a single conversation thread.*
 
-Except now we've turned that into a system behavior. We've taken the failure mode of a single model and made it structural across multiple models.
+One bad assumption gets introduced early. Everything after that looks consistent, but it's wrong. The model fails confidently, so you don't catch it until the reasoning chain has already compounded the error.
+
+> Except now we've turned that into a system behavior.  
+> We've taken the failure mode of a single model and made it structural across multiple models.
 
 ---
 
