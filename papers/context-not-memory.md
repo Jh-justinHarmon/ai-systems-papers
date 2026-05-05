@@ -54,6 +54,34 @@ Large context windows create false confidence. More tokens do not solve non dura
 
 ---
 
+## Observed Behavior
+
+A multi-session workflow demonstrates loss of state.
+
+Setup:
+- Session 1 defines constraints, priorities, and decisions
+- Session 2 attempts to continue the workflow
+
+Procedure:
+- Establish 3–5 constraints in session 1
+- End session
+- Begin session 2 without reintroducing context
+- Ask the system to continue the workflow
+
+Observed:
+- System does not retain prior constraints
+- Outputs contradict prior decisions in multiple cases
+- System may attempt reconstruction, but introduces inconsistencies
+
+Result:
+- Contradiction rate increases as the number of prior constraints increases
+- No error signal is generated
+- System outputs appear valid but violate prior state
+
+This demonstrates that context windows do not provide persistence across sessions, and workflows drift without explicit memory.
+
+---
+
 ## Root Cause
 
 Root cause is treating context windows as memory.
