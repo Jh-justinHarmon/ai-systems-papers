@@ -56,6 +56,35 @@ This compounds fast. More models mean more handoffs. More handoffs mean more unv
 
 ---
 
+## Observed Behavior
+
+A simple two-model pipeline shows this clearly.
+
+Setup:
+- Model A generates structured output with constraints
+- Model B consumes that output and performs a downstream task
+
+Procedure:
+- Prompt Model A to produce structured data with a strict constraint (for example, status must equal "pending")
+- Pass output directly to Model B without validation
+- Introduce a near-match edge case (for example, "pending_review")
+
+Observed:
+- Model A produces valid output within its own frame
+- Model B interprets "pending_review" as "pending"
+- Model B proceeds with an action that violates the original constraint
+
+Result:
+- Both models return successful outputs
+- System logs show success at every step
+- Constraint violation is not detected at the boundary
+
+In repeated runs, interpretation mismatch occurs consistently when constraints are semantically similar but not identical.
+
+This demonstrates that handoffs without contracts allow constraint drift without detection.
+
+---
+
 ## Root Cause
 
 Root cause is treating handoffs as trusted function calls.
