@@ -50,6 +50,34 @@ This compounds with scale. More write access increases risk. More autonomy creat
 
 ---
 
+## Observed Behavior
+
+Prompt constraints fail under edge conditions.
+
+Setup:
+- Agent is given write access to a system
+- Prompt includes explicit constraint (for example, "only update records with status pending")
+
+Procedure:
+- Provide inputs that clearly satisfy the constraint
+- Then introduce edge cases (for example, "pending_review", "pending_approval")
+
+Observed:
+- Agent follows constraint in standard cases
+- Agent violates constraint in edge cases by interpreting similar values as equivalent
+- System executes action without validation
+
+Result:
+- Unauthorized updates occur despite explicit prompt restriction
+- System logs show successful execution
+- No enforcement layer prevents the action
+
+In repeated trials, constraint violations occur whenever interpretation is required rather than exact matching.
+
+This demonstrates that prompts guide behavior but do not enforce governance.
+
+---
+
 ## Root Cause
 
 Root cause is treating prompts as governance.
