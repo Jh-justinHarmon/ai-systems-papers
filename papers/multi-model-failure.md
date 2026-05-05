@@ -1,159 +1,163 @@
-# Multi-Model Systems Are Failing Because We're Treating Untrusted Handoffs Like Function Calls
+# Multi Model Systems Fail Because Handoffs Lack Contracts 
 
-**Status:** FINAL — ready for publication
+This looks like a composition problem. It is a contract problem.
 
-**Word count:** ~1,720 words
+Multi model systems treat each model call like a trusted function. It is not. It is a handoff between probabilistic systems.
+
+The receiving model cannot verify what it received. The originating model cannot control how it is interpreted. Every step adds ambiguity. It compounds.
+
+The failure is architectural. We are chaining functions without contracts. Errors move across boundaries without validation and stack silently.
 
 ---
 
-We're building multi-model systems as if each model call is a trusted function.
+## What Actually Happens
 
-It's not. It's a handoff.
+Multi model systems do not fail like traditional software.
 
-The receiving model can't check what it got. The originating model has no control over how its output will be interpreted. So every step introduces ambiguity, and it compounds.
+Traditional software has typed interfaces. Functions declare inputs and outputs. The system enforces contracts. Errors surface.
 
-This looks like composition. It's actually accumulation — error accumulating across steps.
+Multi model systems do not.
 
-Multi-model failures aren't model failures. They're infrastructure failures we're misclassifying. We're building the wrong thing because we're misclassifying the problem.
+Model A produces output. It looks valid. Syntax is clean. Semantics look correct. From Model A view, this is success.
+
+Model B receives that output. It interprets it. The interpretation may not match Model A intent. Model B assumes a different schema. It drops load bearing context. It treats constraints as optional.
+
+Nothing fails. Nothing throws. Both models succeeded.
+
+The system records success. Logs show completion. No error signal. From the system view, everything worked.
+
+We are treating probabilistic handoffs as typed calls. That is the mistake.
 
 ---
 
 ## The Failure Sequence
 
-Model A produces something valid — by its own definition.
+Here is how it breaks.
 
-That gets passed forward without being checked.
+**Step 1: Model A produces output.** The output is valid by its own logic. Structured or unstructured, it returns successfully. Logs show success.
 
-Model B picks it up and interprets it under a slightly different frame. Maybe it assumes a different schema. Maybe it strips context that was load-bearing. Maybe it treats a constraint as a suggestion.
+**Step 2: Output passes to Model B without validation.** There is no contract check. No schema enforcement. No semantic validation. The handoff is unverified.
 
-Nothing breaks. Nothing throws.
+**Step 3: Model B interprets the output.** It applies its own frame. It may assume a different schema, drop context, or reinterpret constraints. This is expected behavior.
 
-The break happens in the handoff — and you don't see it, because both models did their job. Model A produced valid output. Model B processed it as valid input.
+**Step 4: Model B produces output based on that interpretation.** The output looks valid. Model B succeeded. Logs show success.
 
-You only see it later. Wrong action taken. Wrong data written. Wrong decision made.
+**Step 5: Failure manifests downstream.** A wrong action is taken. Bad data is written. A decision is incorrect. The failure appears where the output is used, not where interpretation diverged.
 
-At that point, you can't localize the failure. There's no error signal. Just a bad outcome and no clear path back.
+**Step 6: System records success at every step.** Model A succeeded. Model B succeeded. No exception. No error. The system shows success end to end.
 
-This looks like orchestration. It isn't. Orchestration assumes the components are reliable. These aren't.
+**Step 7: Discovery happens externally.** A user reports it. A downstream system breaks. A data audit finds it. The system does not detect it.
 
-This looks like model failure. It isn't. The models worked. The infrastructure didn't.
+**Step 8: Debugging requires reconstruction.** You look at what Model A produced and what Model B received. You have outputs. You do not have interpretation. You do not have validation. You reconstruct from fragments.
 
-This looks like composition. It isn't. Composition requires contracts. This is just passing data forward and hoping.
+**Step 9: Trust erodes.** The system cannot be trusted. Every multi step flow is suspect. The system is called unreliable while behaving as designed.
 
-The pattern is the same as a hallucination inside a single conversation thread. One bad assumption gets introduced early. Everything after that looks consistent, but it's wrong. The model fails confidently, so you don't catch it until the reasoning chain has already compounded the error.
-
-Except now we've turned that into a system behavior. We've taken the failure mode of a single model and made it structural across multiple models.
+This compounds fast. More models mean more handoffs. More handoffs mean more unvalidated boundaries. Errors stack.
 
 ---
 
-## What's Actually Missing
+## Root Cause
 
-This is not an orchestration problem. It's a missing layer problem.
+Root cause is treating handoffs as trusted function calls.
 
-We don't have anything that defines:
-- what a valid output is
-- what has to be preserved across steps
-- how interpretation is constrained
-- where failure is detected
+This is not orchestration. Orchestration assumes reliable components.
 
-So we treat models like functions, but we don't provide the infrastructure that makes function composition reliable.
+This is not a model issue. Models are doing their job.
 
-Right now the system is:
+This is not a prompt issue. Prompts guide output. They do not validate handoffs.
 
-**produce → pass → reinterpret → pass → reinterpret**
+The diagnosis is simple. We treat probabilistic handoffs as typed interfaces.
 
-There's no point where truth gets re-established. Every step assumes the last step was correct. And that assumption is never checked. No point where the system checks whether what just happened was valid. No point where ambiguity gets resolved before it propagates.
+Function composition works because of contracts. Inputs are defined. Outputs are defined. The system enforces this.
 
-In software engineering, function composition works because you have typed interfaces, error handling, and observable side effects. You know what a function expects. You know what it returns. You know when it fails.
+Multi model systems have none of that.
 
-In LLM composition, none of that exists by default.
+Model A produces output. There is no enforced definition of valid.
 
-You don't have a contract for what Model A is supposed to produce. You don't have a schema for what Model B is allowed to assume. You don't have a mechanism to detect when the handoff introduced a semantic break.
+Model B receives input. There is no constraint on interpretation.
 
-So the system degrades silently. Each step looks fine in isolation. The failure is in how they connect.
+There is no validation. No schema check. No semantic constraint. No authority model.
 
-Multi-model systems are function chains without contracts. That's the diagnosis.
+Each step assumes the previous step was correct. That assumption is never checked.
+
+The system is: produce, pass, reinterpret, pass.
+
+There is no point where truth is re established. No point where ambiguity is resolved. No point where the system checks if the step was valid.
+
+Every handoff is a failure boundary.
 
 ---
 
-## What Fixes It (And What Doesn't)
+## What Contracts Actually Require
 
-This does not get fixed by better prompts.
+Better prompts do not fix this. Better models do not fix this. Orchestration does not fix this.
 
-Prompts change what a model produces. They don't change what happens after the output leaves the model. They don't validate the handoff. They don't enforce a contract. They don't detect when the receiving model reinterpreted something in a way that breaks the original intent.
+They improve output. They do not enforce boundaries.
 
-What actually changes the system is inserting control at the handoff.
+What fixes this is validation at every handoff.
 
-That means putting control at the handoff:
+**Contract definition.** Define valid output. Schema, constraints, required fields. Make it explicit.
 
-You check what's being passed.
+**Boundary validation.** Validate output before passing it forward. If it fails, reject it.
 
-You validate it against an expectation.
+**Interpretation constraints.** Limit how the receiving model can interpret input. Prevent drift.
 
-You decide explicitly whether it moves forward.
+**Authority model.** When interpretations differ, define which one is correct.
 
-And you track what actually survives each step, not what you assume survives.
+**Audit trail.** Log what was produced, validated, and accepted. Not just outputs. The decision path.
 
-And you define who's right when interpretations diverge — because right now, that's implicit.
+Contracts live at boundaries, not in prompts.
 
-With that in place, the system changes:
-
-Failures stop showing up at the end. They show up at the moment something goes wrong. The handoff fails, and you know it failed, and you know why.
-
-You can see what each model received and what it produced. Debugging becomes tractable. You're not reverse-engineering a bad outcome. You're inspecting a specific boundary where the contract broke.
-
-Behavior becomes repeatable. Same input, same intermediate states, same outcome — and you can see why. The system stops being emergent and starts being composable.
-
-That's the difference between a system that works in demos and a system that works in production.
+The result is simple. Failures surface at the boundary. Debugging points to the exact step where the contract broke. The system becomes composable instead of emergent.
 
 ---
 
 ## Where This Goes Wrong
 
-If you add more models before fixing this, you just increase the number of untrusted handoffs.
+Adding more models without contracts increases failure.
 
-That creates progress-shaped objects. More activity. Less reliability.
+More models means more boundaries. More boundaries means more interpretation drift.
 
-You end up building interfaces around an idea instead of making the core behavior real. The system looks more sophisticated — more models, more steps, more orchestration logic — but it's less reliable, because every new boundary is another place where truth can degrade silently.
+If contracts are too strict, valid outputs get rejected. The system stops working.
 
-The actual decision is:
+If contracts are too loose, errors pass through.
 
-Do we keep building orchestration on top of untrusted handoffs?
+Defining valid is context dependent. Schema is easy. Semantics are hard. Open ended output resists strict contracts.
 
-Or do we treat every handoff as a place where truth has to be re-established before anything moves forward?
+Validation adds latency. Some systems cannot afford it.
 
-That's the line between something that demos well and something that works in production.
+Contracts change over time. What is valid evolves.
 
 ---
 
-## What This Costs
+## Tradeoffs
 
-Boundary validation adds latency. Every handoff that gets checked is a handoff that takes longer.
+Validation adds latency.
 
-Schema enforcement requires contract definition upfront. You have to decide what "valid" means before you can enforce it. That's design work. That's effort.
+Contracts require upfront design.
 
-Open-ended tasks resist schema enforcement. If the output is supposed to be creative or exploratory, defining a rigid contract might constrain the system in ways you don't want.
+Semantic validation is hard.
 
-Semantic validation is harder than structural validation. You can check whether the output matches a schema. It's harder to check whether it means what it's supposed to mean.
+Open ended tasks resist structure.
 
-These are real costs. That's what reliability costs.
+The cost is real.
 
-The alternative is accumulating invisible errors. The alternative is a system that looks like it's working until it produces a bad outcome, and you can't figure out why.
+Without contracts, errors accumulate invisibly. Every handoff is a failure point. Every multi step system is unreliable.
+
+The system looks fine until it is not. When it fails, you cannot locate where it broke.
+
+The question is not whether to add contracts. It is whether you can run multi model systems without them.
 
 ---
 
 ## What This Reveals
 
-There's a real gap between what models can do and what systems can reliably produce.
+Multi model systems fail because handoffs lack contracts.
 
-Multi-model coordination is where it shows up first — because it breaks even in the simplest case. Just two models, one handoff, and it still breaks.
+The fix is not better models. It is recognizing that probabilistic handoffs are not function calls and building validation at boundaries.
 
-None of this is new. Contracts, validation, observability, authority — this is basic distributed systems work.
+AI systems do not compose by default. They require explicit contracts.
 
-But it's not default in AI tooling yet.
+Treating handoffs as function calls is the misclassification.
 
-Teams that solve this first will build systems that work. It stays the default for teams that don't.
-
-The question isn't whether multi-model systems are useful. They are. The question is whether we're going to build them like production systems or like demos.
-
-Right now, we're building demos — because we're still treating untrusted handoffs like function calls.
+The models are working. The contracts are missing.
