@@ -52,6 +52,32 @@ In production, this compounds. One bad output feeds another system, which produc
 
 ---
 
+## Observed Behavior
+
+Incorrect outputs are often produced with high confidence and no error signal.
+
+Setup:
+- System generates answers to factual or procedural questions
+- No validation layer is applied
+
+Procedure:
+- Provide inputs with ambiguous or partially incorrect context
+- Record output and confidence signals (tone, completeness)
+- Introduce a validation step in a second run (for example, cross-check or rule-based verification)
+
+Observed:
+- System produces incorrect outputs that appear complete and confident
+- Without validation, errors are not detected
+- With validation, a significant portion of incorrect outputs are flagged
+
+Result:
+- Detection rate increases when validation is applied at the output boundary
+- Without validation, incorrect outputs pass as successful results
+
+This demonstrates that AI systems fail silently when outputs are accepted without verification.
+
+---
+
 ## Root Cause
 
 Root cause: no validation at the output boundary.
